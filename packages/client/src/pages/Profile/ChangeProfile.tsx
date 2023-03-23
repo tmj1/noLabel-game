@@ -1,15 +1,15 @@
-import { Form, Formik } from 'formik';
-import * as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Title } from '../../components/Title';
-import { Button } from '../../components/Button';
+import { useNavigate } from 'react-router-dom';
+import { changeUserProfile } from '@components/Autification/slice';
+import { Button } from '@components/Button';
+import { InputValidate } from '@components/InputValidate';
+import { Title } from '@components/Title';
+import { currentUser } from '@store/selectors';
+import { useAppDispatch } from '@utils/hooks/reduxHooks';
 import classNames from 'classnames';
-import { changeUserProfile } from '../../components/Autification/slice';
-import { useAppDispatch } from '../../../utils/hooks/reduxHooks';
-import InputValidate from '../../components/InputValidate';
-import { currentUser } from '../../Store/selectors';
+import { Form, Formik } from 'formik';
+import * as Yup from 'yup';
 
 const ProfileSchema = Yup.object().shape({
   first_name: Yup.string()
@@ -25,17 +25,17 @@ const ProfileSchema = Yup.object().shape({
   login: Yup.string()
     .min(2, 'Слишком короткий!')
     .max(10, 'Слишком длинный!')
-    .matches(/^[a-z0-9_-]{2,19}$/, 'Поле зполнено некорректно')
+    .matches(/^[a-z0-9_-]{2,19}$/, 'Поле заполнено некорректно')
     .required('Поле не может быть пустым'),
   email: Yup.string()
-    .matches(/^[A-Z0-9._%+-]+@[A-Z0-9-]+.+.[A-Z]{2,4}$/i, 'Поле зполнено некорректно')
+    .matches(/^[A-Z0-9._%+-]+@[A-Z0-9-]+.+.[A-Z]{2,4}$/i, 'Поле заполнено некорректно')
     .required('Поле не может быть пустым'),
   phone: Yup.string()
     .matches(/^[\d\\+][\d\\(\\)\\ -]{9,14}\d$/, 'Поле зполнено некорректно')
     .required('Поле не может быть пустым'),
 });
 
-const ChangeProfile = () => {
+export const ChangeProfile = () => {
   const navigate = useNavigate();
   const user = useSelector(currentUser);
   const [fieldError, setFieldError] = useState(null);
@@ -116,4 +116,3 @@ const ChangeProfile = () => {
     </div>
   );
 };
-export default ChangeProfile;

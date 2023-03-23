@@ -1,16 +1,16 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import React from 'react';
+import { NavigateFunction } from 'react-router';
 import { toast } from 'react-toastify';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
   ChangePasswordType,
   ChangeProfileType,
   LoginType,
   ProfileType,
   UserInfo,
-} from '../../../typings/app.typings';
-import { showError, showSuccess } from '../../../utils/ShowError';
+} from '@typings/app.typings';
+import { showError, showSuccess } from '@utils/ShowError';
 import axios, { AxiosResponse } from 'axios';
-import { NavigateFunction } from 'react-router';
-import React from 'react';
 
 const initialState = {
   user: {
@@ -83,9 +83,6 @@ export const handleSubmitLogin = createAsyncThunk(
           }
         }
       })
-      .then((response) => {
-        console.log('Этот респонс должен быть пустым ' + response);
-      })
       .catch((error) => {
         if (error.response.data.reason === 'User already in system') {
           thunkAPI.dispatch(getCurrentUser({ data, navigate }));
@@ -117,7 +114,6 @@ export const getCurrentUser = createAsyncThunk(
         'Content-Type': 'application/json; charset=utf-8',
       },
       withCredentials: true,
-      timeout: 1000,
     })
       .then((response) => {
         showSuccess('Данные пользователя загружены!');
@@ -146,16 +142,25 @@ export const getCurrentUser = createAsyncThunk(
 
 export const changeUserProfile = createAsyncThunk(
   'user/profile',
-  async ({
-    navigate,
-    values,
-    setFieldError,
-  }: {
-    navigate: NavigateFunction;
-    values: ChangeProfileType;
-    setFieldError: React.Dispatch<React.SetStateAction<null>>;
-  }) => {
-    const data = JSON.stringify(values);
+  async (
+    {
+      navigate,
+      values,
+      setFieldError,
+    }: {
+      navigate: NavigateFunction;
+      values: ChangeProfileType;
+      setFieldError: React.Dispatch<React.SetStateAction<null>>;
+    },
+    thunkAPI
+  ) => {
+    // При изменении данных профиля на этом API требуется указать display_name,
+    // в нашем приложении display_name не используется, поэтому временно вводим эту константу
+    // в дальнейшем, при реализации своего бэкэнда, константу editValue можно удалить.
+    const editValue: Record<string, string> = values;
+    editValue.display_name = values.login;
+
+    const data = JSON.stringify(editValue);
     axios('https://ya-praktikum.tech/api/v2/user/profile', {
       method: 'put',
       data: data,
@@ -163,9 +168,13 @@ export const changeUserProfile = createAsyncThunk(
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
+      withCredentials: true,
     })
       .then(() => {
         showSuccess('Пользователь изменен!');
+        thunkAPI.dispatch(getCurrentUser({ data, navigate }));
+      })
+      .then(() => {
         navigate('/profile');
       })
       .catch((error) => {
@@ -197,24 +206,40 @@ export const changeUserPassword = createAsyncThunk(
   }
 );
 
-export const uploadAvatar = createAsyncThunk('user/avatar', async (image: FormData) => {
-  try {
-    const result = await axios(`https://ya-praktikum.tech/api/v2/user/profile/avatar`, {
-      method: 'put',
-      data: image,
-      headers: {
-        Accept: '*/*',
-        'Content-Type': 'multipart/form-data;',
-      },
-      withCredentials: true,
-    });
-    const response = result as AxiosResponse;
-    showSuccess('Аватар изменен');
-    return response.data.uri;
-  } catch (error) {
-    showError();
+export const uploadAvatar = createAsyncThunk(
+  'user/avatar',
+  async ({ image, navigate }: { navigate: NavigateFunction; image: FormData }, thunkAPI) => {
+    try {
+      const result = await axios(`https://ya-praktikum.tech/api/v2/user/profile/avatar`, {
+        method: 'put',
+        data: image,
+        headers: {
+          Accept: '*/*',
+          'Content-Type': 'multipart/form-data;',
+        },
+        withCredentials: true,
+      });
+      const response = result as AxiosResponse;
+      thunkAPI.dispatch(
+        setUser({
+          avatar: response.data.avatar,
+          email: response.data.email,
+          id: response.data.id,
+          login: response.data.login,
+          first_name: response.data.first_name,
+          second_name: response.data.second_name,
+          display_name: response.data.display_name,
+          phone: response.data.phone,
+        })
+      );
+      showSuccess('Аватар изменен');
+      navigate('/profile');
+      return response.data.uri;
+    } catch (error) {
+      showError();
+    }
   }
-});
+);
 
 export const handleSubmitRegistration = createAsyncThunk(
   'user/login',
