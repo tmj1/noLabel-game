@@ -1,33 +1,31 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
+// icons
+import { IoPauseSharp, IoPlaySharp } from 'react-icons/io5';
+import { ControlsProps } from '@components/Controls/Controls.typing';
+
 import './index.scss';
 
-// icons
-import {
-  IoPlaySharp,
-  IoPauseSharp,
-} from 'react-icons/io5';
-
-const Controls = ({
-                    audioRef,
-                    progressBarRef,
-                    duration,
-                    setTimeProgress,
-                  }:any) => {
+export const Controls: FC<ControlsProps> = ({
+  audioRef,
+  progressBarRef,
+  duration,
+  setTimeProgress,
+}) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const togglePlayPause = () => {
     setIsPlaying((prev) => !prev);
   };
 
-  const playAnimationRef:any = useRef();
+  const playAnimationRef = useRef() as React.MutableRefObject<number>;
 
   const repeat = useCallback(() => {
     const currentTime = audioRef.current.currentTime;
     setTimeProgress(currentTime);
-    progressBarRef.current.value = currentTime;
+    progressBarRef.current.value = currentTime.toString();
     progressBarRef.current.style.setProperty(
       '--range-progress',
-      `${(progressBarRef.current.value / duration) * 100}%`
+      `${(Number(progressBarRef.current.value) / duration) * 100}%`
     );
 
     playAnimationRef.current = requestAnimationFrame(repeat);
@@ -43,14 +41,10 @@ const Controls = ({
   }, [isPlaying, audioRef, repeat]);
 
   return (
-    <div className="controls-wrapper">
-      <div className="controls">
-        <button onClick={togglePlayPause}>
-          {isPlaying ? <IoPauseSharp /> : <IoPlaySharp />}
-        </button>
+    <div className='controls-wrapper'>
+      <div className='controls'>
+        <button onClick={togglePlayPause}>{isPlaying ? <IoPauseSharp /> : <IoPlaySharp />}</button>
       </div>
     </div>
   );
 };
-
-export default Controls;

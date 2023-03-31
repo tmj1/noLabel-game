@@ -1,20 +1,22 @@
-import React, { ReactElement, ReactNode } from 'react';
+import { FC } from 'react';
 import { Link } from 'react-router-dom';
-import './index.scss';
+import { FooterProps } from '@components/Footer/Footer.typings';
+
 import AudioPlayer from '../AudioPlayer';
 
-interface FooterProps {
-  children?: ReactElement | ReactNode | ReactNode[];
-}
+import './index.scss';
 
-const Footer: React.FC<FooterProps> = ({ children }) => {
+export const Footer: FC<FooterProps> = ({ children }) => {
   return (
     <>
       <div className='footer'>
         <div className='footer__logo'></div>
-        <div className='footer__children-container'>{children}<AudioPlayer /></div>
+        <div className='footer__children-container'>
+          {children}
+          <AudioPlayer />
+        </div>
         <div className='footer__link-container'>
-          <Link to={'/aboutUs'} className='custom-link'>
+          <Link to={'/about'} className='custom-link'>
             О нас
           </Link>
         </div>
