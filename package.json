@@ -25,6 +25,6 @@
     "lerna": "6.5.1"
   },
   "dependencies": {
-
+    "sequelize": "^6.31.0"
   }
 }
